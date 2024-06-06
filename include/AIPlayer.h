@@ -98,5 +98,7 @@ class AIPlayer: public Player{
         static double miHeuristica3(const Parchis &estado, int jugador);
         
         static double miSub_Heuristica3_1(const Parchis &estado, int jugador);
+
+        static double miSub_Heuristica3_2(const Parchis &estado, int jugador);
 };
 #endif

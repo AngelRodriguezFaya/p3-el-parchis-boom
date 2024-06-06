@@ -801,6 +801,9 @@ double AIPlayer::miHeuristica3(const Parchis &estado, int jugador)
         puntuacion_jugador = miSub_Heuristica3_1(estado, jugador);
         puntuacion_oponente = miSub_Heuristica3_1(estado, oponente);
 
+        // puntuacion_jugador = miSub_Heuristica3_2(estado, jugador);
+        // puntuacion_oponente = miSub_Heuristica3_2(estado, oponente);
+
         // Devuelvo la puntuación de mi jugador menos la puntuación del oponente.
         return puntuacion_jugador - puntuacion_oponente;
     }
@@ -832,15 +835,15 @@ double AIPlayer::miSub_Heuristica3_1(const Parchis &estado, int jugador)
                 puntuacion_jugador += 40;
             }
 
-            // Valoro positivamente que con este movimiento pueda comer una ficha
-            // Tengo en cuenta que sean los colores del otro jugador.
-            pair<color, int> fichaComida = estado.eatenPiece();
-            if (fichaComida.first != none){
-                if(fichaComida.first != my_colors[0] and fichaComida.first != my_colors[1])
-                    puntuacion_jugador += 1000;
-                else // Si son de mis colores, lo valoro negativamente
-                    puntuacion_jugador -= 1000;
-            }
+            // // Valoro positivamente que con este movimiento pueda comer una ficha
+            // // Tengo en cuenta que sean los colores del otro jugador.
+            // pair<color, int> fichaComida = estado.eatenPiece();
+            // if (fichaComida.first != none){
+            //     if(fichaComida.first != my_colors[0] and fichaComida.first != my_colors[1])
+            //         puntuacion_jugador += 1000;
+            //     else // Si son de mis colores, lo valoro negativamente
+            //         puntuacion_jugador -= 1000;
+            // }
 
             // Valoro positivamente que la ficha esté en el pasillo de camino a la meta.
             else if (casilla_act_j.type == final_queue)
@@ -855,27 +858,173 @@ double AIPlayer::miSub_Heuristica3_1(const Parchis &estado, int jugador)
             int energia = estado.getPowerBar(jugador).getPower();
 
             if(estado.distanceToGoal(c, j) <= 25 and (energia>= 65 and energia < 70)){
-                puntuacion_jugador += abs(puntuacion_jugador) * 2;
+                puntuacion_jugador += 100;
             }
             if(estado.distanceToGoal(c, j) <= 40 and (energia>= 75 and energia < 80)){
-                puntuacion_jugador += abs(puntuacion_jugador) * 2;
+                puntuacion_jugador += 100;
             }
             if(energia == 99){  // Para asegurarnos que coge la estrella si o si y no hace CATAPUMCHIMPUM
                 puntuacion_jugador += 1000; 
             }
         }
 
-        // // Valoro negativamente que tenga fichas en la casa.
-        // puntuacion_jugador -= (estado.piecesAtHome(c) * 100);
+        // Valoro negativamente que tenga fichas en la casa.
+        puntuacion_jugador -= (estado.piecesAtHome(c) * 100);
 
-        // // Valoro positivamente que tenga fichas en la meta.
-        // puntuacion_jugador += (estado.piecesAtGoal(c) * 100);
+        // Valoro positivamente que tenga fichas en la meta.
+        puntuacion_jugador += (estado.piecesAtGoal(c) * 100);
     }
     
     // Además de valorar los dados que me pueden beneficiar, recorro TODOS los dados 
     // especiales de mi jugador con la siguiente función:
     // Para ello, necesito saber la energía de mi powerbar que poseo en este instante.
-    puntuacion_jugador += puntuacionPorDadoEspecial(estado.getPowerBar(jugador).getPower());
+    int valorPowerBar = estado.getPowerBar(jugador).getPower();
+
+    if(valorPowerBar >= 0 and valorPowerBar < 50){              // Movimiento rápido (seta)
+        puntuacion_jugador += 40;
+    }
+    else if( (valorPowerBar >= 50 and valorPowerBar < 60) or    // Concha roja
+             (valorPowerBar >= 70 and valorPowerBar < 75) ){
+        puntuacion_jugador += 50;          
+    }
+    else if(valorPowerBar >= 60 and valorPowerBar < 65){        // BOOM
+        puntuacion_jugador -= 70;
+    }
+    else if(valorPowerBar >= 65 and valorPowerBar < 70){        // Movimiento ultra-rápido
+        puntuacion_jugador += 90;
+    }
+    else if(valorPowerBar >= 75 and valorPowerBar < 80){        // Movimiento bala (Cohete)
+        puntuacion_jugador += 130;
+    }
+    else if(valorPowerBar >= 80 and valorPowerBar < 85){        // CATAPUM
+        puntuacion_jugador -= 100;
+    }
+    else if(valorPowerBar >= 85 and valorPowerBar < 90){        // Concha azul
+        puntuacion_jugador += 120;
+    }
+    else if(valorPowerBar >= 90 and valorPowerBar < 95){        // BOOMBOOM
+        puntuacion_jugador -= 150;
+    }
+    else if(valorPowerBar >= 95 and valorPowerBar < 100){       // Movimiento Estrella
+        puntuacion_jugador += 200;
+    }
+    else if(valorPowerBar >= 100){                              // CATAPUMCHIMPUM
+        puntuacion_jugador -= 300;
+    }
+
+    return puntuacion_jugador;
+}
+
+double AIPlayer::miSub_Heuristica3_2(const Parchis &estado, int jugador)
+{
+    // IMPORTANTE: Aquí el jugador puede ser tanto el jugador actual como el oponente.
+
+    // Colores que juega el jugador.
+    vector<color> my_colors = estado.getPlayerColors(jugador);
+
+    // Puntuaciones del jugador.
+    double puntuacion_jugador = 0;
+    double puntuacion_color_1 = 0;
+    double puntuacion_color_2 = 0;
+    
+    // Recorro primero un color y después el otro.
+    color color_1 = my_colors[0];
+    color color_2 = my_colors[1];
+
+    // La idea es apoyar el color que mejor vaya, es decir, el que tenga más fichas en casa
+    // o las fichas que más cerca estén de la casa.
+
+    if(estado.piecesAtGoal(color_1) > estado.piecesAtGoal(color_2)){
+        puntuacion_color_1 += (estado.piecesAtGoal(color_1)) * 20;
+    }
+    else if(estado.piecesAtGoal(color_1) < estado.piecesAtGoal(color_2)){
+        puntuacion_color_2 += (estado.piecesAtGoal(color_2)) * 20;
+    }
+    else if(estado.piecesAtGoal(color_1) == estado.piecesAtGoal(color_2)){
+        // Si tienen el mismo número de fichas, damos preferencia al color que tenga una ficha más cerca de casa.
+        int minimo_color_1 = masinf;
+        int minimo_color_2 = masinf;
+
+        for (int i = 0; i < num_pieces; i++)
+        {   
+            int distancia_color_1 = estado.distanceToGoal(color_1, i);
+            if(distancia_color_1 < minimo_color_1)
+                minimo_color_1 = distancia_color_1;
+            
+            int distancia_color_2 = estado.distanceToGoal(color_2, i);
+            if(distancia_color_2 < minimo_color_2)
+                minimo_color_2 = distancia_color_2;
+ 
+        }
+
+        if(minimo_color_1 < minimo_color_2){ 
+            puntuacion_color_1 += (puntuacion_color_1) * 20;
+        }
+        else if(minimo_color_1 > minimo_color_2){ 
+            puntuacion_color_2 += (puntuacion_color_2) * 20;
+        }
+        else{} // si empate, pues se decide más abajo, dependiendo de casillas seguras y de dados especiales.
+    }
+    
+    // Valoro negativamente que tengan fichas en casa
+    puntuacion_color_1 -= estado.piecesAtHome(color_1) * 10;
+    puntuacion_color_2 -= estado.piecesAtHome(color_2) * 10;
+
+    // Valoro positivamente que tengan fichas en casillas seguras.
+    for (int i = 0; i < num_pieces; i++)
+    {
+        if(estado.isSafePiece(color_1, i))
+            puntuacion_color_1 += 50;
+
+        if(estado.isSafePiece(color_2, i))
+            puntuacion_color_2 += 50;
+    }
+
+    // Hago la balanza entre los dos colores.
+    if(puntuacion_color_1 > puntuacion_color_2){
+        puntuacion_jugador = 2*puntuacion_color_1 + (puntuacion_color_2 / 2);
+    }
+    else if(puntuacion_color_1 < puntuacion_color_2){
+        puntuacion_jugador = (puntuacion_color_1 / 2) + 2*puntuacion_color_2;
+    }else{
+        puntuacion_jugador = (puntuacion_color_1 + puntuacion_color_2) / 2;
+    }
+
+    // Ahora tengo en cuenta los dados especiales.
+    
+    int valorPowerBar = estado.getPowerBar(jugador).getPower();
+
+    if(valorPowerBar >= 0 and valorPowerBar < 50){              // Movimiento rápido (seta)
+        puntuacion_jugador += 40;
+    }
+    else if( (valorPowerBar >= 50 and valorPowerBar < 60) or    // Concha roja
+             (valorPowerBar >= 70 and valorPowerBar < 75) ){
+        puntuacion_jugador += 30;          
+    }
+    else if(valorPowerBar >= 60 and valorPowerBar < 65){        // BOOM
+        puntuacion_jugador -= 70;
+    }
+    else if(valorPowerBar >= 65 and valorPowerBar < 70){        // Movimiento ultra-rápido
+        puntuacion_jugador += 70;
+    }
+    else if(valorPowerBar >= 75 and valorPowerBar < 80){        // Movimiento bala (Cohete)
+        puntuacion_jugador += 100;
+    }
+    else if(valorPowerBar >= 80 and valorPowerBar < 85){        // CATAPUM
+        puntuacion_jugador -= 100;
+    }
+    else if(valorPowerBar >= 85 and valorPowerBar < 90){        // Concha azul
+        puntuacion_jugador += 100;
+    }
+    else if(valorPowerBar >= 90 and valorPowerBar < 95){        // BOOMBOOM
+        puntuacion_jugador -= 120;
+    }
+    else if(valorPowerBar >= 95 and valorPowerBar < 100){       // Movimiento Estrella
+        puntuacion_jugador += 200;
+    }
+    else if(valorPowerBar >= 100){                              // CATAPUMCHIMPUM
+        puntuacion_jugador -= 300;
+    }
 
     return puntuacion_jugador;
 }
