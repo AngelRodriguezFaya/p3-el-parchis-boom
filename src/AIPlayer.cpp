@@ -1,3 +1,16 @@
+/**
+ * @file AIPlayer.cpp
+ * @brief Implementación de la clase AIPlayer
+ * 
+ * Modificado por Ángel Rodríguez Faya
+ * 
+ * Práctica 4: Busqueda con adversario en juegos. El Parchís Boom!
+ * Inteligencia Artifical
+ * Curso 2023/2024
+ * Universidad de Granada - Grado en Ingeniería Informática
+ */
+
+
 # include "AIPlayer.h"
 # include "Parchis.h"
 
@@ -72,69 +85,39 @@ void AIPlayer::think(color & c_piece, int & id_piece, int & dice) const{
     valor = Poda_AlfaBeta(*actual, jugador, 0, PROFUNDIDAD_ALFABETA, c_piece, id_piece, dice, alpha, beta, ValoracionTest);
     cout << "Valor MiniMax: " << valor << "  Accion: " << str(c_piece) << " " << id_piece << " " << dice << endl;
 
-    // ----------------------------------------------------------------- //
-
-    // Si quiero poder manejar varias heurísticas, puedo usar la variable id del agente para usar una u otra.
-    switch(id){
-        case 0:
-            valor = Poda_AlfaBeta(*actual, jugador, 0, PROFUNDIDAD_ALFABETA, c_piece, id_piece, dice, alpha, beta, ValoracionTest);
-            break;
-        case 1:
-            valor = Poda_AlfaBeta(*actual, jugador, 0, PROFUNDIDAD_ALFABETA, c_piece, id_piece, dice, alpha, beta, MiValoracion1);
-            break;
-        case 2:
-            valor = Poda_AlfaBeta(*actual, jugador, 0, PROFUNDIDAD_ALFABETA, c_piece, id_piece, dice, alpha, beta, MiValoracion2);
-            break;
-    }
-    cout << "Valor MiniMax: " << valor << "  Accion: " << str(c_piece) << " " << id_piece << " " << dice << endl;
-
-    */
+    // ----------------------------------------------------------------- //*/
+    
    double valor;
    double alpha = menosinf, beta = masinf;
 
-//    switch (id){
-//         case 0:
-//               thinkAleatorio(c_piece, id_piece, dice); 
-//               break;
-//         case 1:
-//               thinkAleatorioMasInteligente(c_piece, id_piece, dice);
-//               break;
-//         case 2:
-//               thinkFichaMasAdelantada(c_piece, id_piece, dice);
-//               break;
-//         case 3:
-//               thinkMejorOpcion(c_piece, id_piece, dice);
-//               break;
-//         case 4:
-//               valor = podaAlphaBeta(*actual, jugador, c_piece, id_piece, dice, 0, PROFUNDIDAD_ALFABETA, alpha, beta, ValoracionTest);
-//               break;
-//         case 5:
-//             valor = podaAlphaBeta(*actual, jugador, c_piece, id_piece, dice, 0, PROFUNDIDAD_ALFABETA, alpha, beta, miHeuristica1);
-//             break;
-//         case 6:
-//             valor = podaAlphaBeta(*actual, jugador, c_piece, id_piece, dice, 0, PROFUNDIDAD_ALFABETA, alpha, beta, miHeuristica2);
-//             break;
-//         case 7:
-//             valor = podaAlphaBeta(*actual, jugador, c_piece, id_piece, dice, 0, PROFUNDIDAD_ALFABETA, alpha, beta, miHeuristica4);
-//             break;
 
-//    }
-
-   switch (id){
+    switch (id){
         case 0:
-              valor = podaAlphaBeta(*actual, jugador, c_piece, id_piece, dice, 0, PROFUNDIDAD_ALFABETA, alpha, beta, ValoracionTest);
-              break;
+            valor = podaAlphaBeta(*actual, jugador, c_piece, id_piece, dice, 0, PROFUNDIDAD_ALFABETA, alpha, beta, ValoracionTest);
+            break;
         case 1:
-            valor = podaAlphaBeta(*actual, jugador, c_piece, id_piece, dice, 0, PROFUNDIDAD_ALFABETA, alpha, beta, miHeuristica1);
-            break;
-        case 2:
-            valor = podaAlphaBeta(*actual, jugador, c_piece, id_piece, dice, 0, PROFUNDIDAD_ALFABETA, alpha, beta, miHeuristica2);
-            break;
-        case 3:
             valor = podaAlphaBeta(*actual, jugador, c_piece, id_piece, dice, 0, PROFUNDIDAD_ALFABETA, alpha, beta, miHeuristica3);
             break;
-
+        case 2:
+            valor = podaAlphaBeta(*actual, jugador, c_piece, id_piece, dice, 0, PROFUNDIDAD_ALFABETA, alpha, beta, miHeuristica1);
+            break;
+        case 3:
+            valor = podaAlphaBeta(*actual, jugador, c_piece, id_piece, dice, 0, PROFUNDIDAD_ALFABETA, alpha, beta, miHeuristica2);
+            break;
+        case 4:
+            thinkAleatorio(c_piece, id_piece, dice); 
+            break;
+        case 5:
+            thinkAleatorioMasInteligente(c_piece, id_piece, dice);
+            break;
+        case 6:
+            thinkFichaMasAdelantada(c_piece, id_piece, dice);
+            break;
+        case 7:
+            thinkMejorOpcion(c_piece, id_piece, dice);
+            break;
    }
+
    cout << "Valor MiniMax: " << valor << "  Accion: " << str(c_piece) << " " << id_piece << " " << dice << endl;
 }
 
@@ -463,6 +446,11 @@ double AIPlayer::podaAlphaBeta(const Parchis &actual, int jugador, color &c_piec
     }
 }
 
+
+// *******************************************************************************************//
+// ********************************* MIS HEURÍSTICAS *****************************************//
+// *******************************************************************************************//
+
 double AIPlayer::miHeuristica1(const Parchis &estado, int jugador)
 {
     int ganador = estado.getWinner();
@@ -572,44 +560,6 @@ double AIPlayer::miHeuristica1(const Parchis &estado, int jugador)
     }
 }
 
-int AIPlayer::puntuacionPorDadoEspecial(const int valorPowerBar){
-    
-    int puntuacion = 0;
-
-    if(valorPowerBar >= 0 and valorPowerBar < 50){              // Movimiento rápido (seta)
-        puntuacion += 20;
-    }
-    else if( (valorPowerBar >= 50 and valorPowerBar < 60) or    // Concha roja
-             (valorPowerBar >= 70 and valorPowerBar < 75) ){
-        puntuacion += 50;          
-    }
-    else if(valorPowerBar >= 60 and valorPowerBar < 65){        // BOOM
-        puntuacion -= 70;
-    }
-    else if(valorPowerBar >= 65 and valorPowerBar < 70){        // Movimiento ultra-rápido
-        puntuacion += 70;
-    }
-    else if(valorPowerBar >= 75 and valorPowerBar < 80){        // Movimiento bala (Cohete)
-        puntuacion += 100;
-    }
-    else if(valorPowerBar >= 80 and valorPowerBar < 85){        // CATAPUM
-        puntuacion -= 100;
-    }
-    else if(valorPowerBar >= 85 and valorPowerBar < 90){        // Concha azul
-        puntuacion += 120;
-    }
-    else if(valorPowerBar >= 90 and valorPowerBar < 95){        // BOOMBOOM
-        puntuacion -= 120;
-    }
-    else if(valorPowerBar >= 95 and valorPowerBar < 100){       // Movimiento Estrella
-        puntuacion += 200;
-    }
-    else if(valorPowerBar >= 100){                              // CATAPUMCHIMPUM
-        puntuacion -= 300;
-    }
-
-    return puntuacion;
-}
 
 double AIPlayer::miHeuristica2(const Parchis &estado, int jugador)
 {
@@ -683,6 +633,7 @@ double AIPlayer::miHeuristica2(const Parchis &estado, int jugador)
                 int distanciaAMeta = estado.distanceToGoal(c, j);
                 puntuacion_jugador += 100 - distanciaAMeta;
 
+                // Valores del dado que me pueden beneficiar.
                 int energia = estado.getPowerBar(jugador).getPower();
 
                 if(estado.distanceToGoal(c, j) <= 25 and (energia>= 65 and energia < 70)){
@@ -779,6 +730,10 @@ double AIPlayer::miHeuristica2(const Parchis &estado, int jugador)
 }
 
 
+// ****************************************************************************************//
+// **************** HEURÍSTICA 3  Y 3_1 PROPUESTAS PARA LA EVALUACIÓN *********************//
+// ****************************************************************************************//
+
 double AIPlayer::miHeuristica3(const Parchis &estado, int jugador)
 {
     int ganador = estado.getWinner();
@@ -820,8 +775,9 @@ double AIPlayer::miSub_Heuristica3_1(const Parchis &estado, int jugador)
     // Puntuaciones del jugador.
     int puntuacion_jugador = 0;
     
-    // Recorro colores del jugador.
-    // Recorro todas las fichas del jugador
+    // Recorro los dos colores del jugador.
+    // Recorro todas las fichas del jugador.
+
     for (int i = 0; i < my_colors.size(); i++)
     {
         color c = my_colors[i];
@@ -858,12 +814,13 @@ double AIPlayer::miSub_Heuristica3_1(const Parchis &estado, int jugador)
                 puntuacion_jugador += 100 - distanciaAMeta;
             }         
 
+            // Tengo en cuenta si la ficha está cerca de la meta y tiene una determinada energia.
             int energia = estado.getPowerBar(jugador).getPower();
 
-            if(estado.distanceToGoal(c, j) <= 25 and (energia>= 65 and energia < 70)){
+            if(estado.distanceToGoal(c, j) <= 25 and (energia>= 65 and energia < 70)){  // Movimiento ultra-rápido
                 puntuacion_jugador += 20;
             }
-            if(estado.distanceToGoal(c, j) <= 40 and (energia>= 75 and energia < 80)){
+            if(estado.distanceToGoal(c, j) <= 40 and (energia>= 75 and energia < 80)){  // Movimiento bala (Cohete)
                 puntuacion_jugador += 20;
             }
             if(energia == 99){  // Para asegurarnos que coge la estrella si o si y no hace CATAPUMCHIMPUM
@@ -874,22 +831,11 @@ double AIPlayer::miSub_Heuristica3_1(const Parchis &estado, int jugador)
         // Valoro negativamente que tenga fichas en la casa.
         puntuacion_jugador -= (estado.piecesAtHome(c) * 10);
 
-        // // Para que no pierda turnos, voy a dar gran importancia a que si tengo el dado 5
-        // // y fichas en la casa, escoja el dado 5
-        // if(estado.piecesAtHome(c)){
-        //     for(int i = 0; i < estado.getAvailableNormalDices(jugador).size(); i++){
-        //         if(estado.getAvailableNormalDices(jugador)[i] == 5){
-        //             puntuacion_jugador += 100; 
-        //         }
-        //     }
-        // }
-
         // Valoro positivamente que tenga fichas en la meta.
         puntuacion_jugador += (estado.piecesAtGoal(c) * 20);
     }
     
-    // Además de valorar los dados que me pueden beneficiar, recorro TODOS los dados 
-    // especiales de mi jugador con la siguiente función:
+    // Recorro TODOS los valores que puede tomar el dado especial de mi jugador con la siguiente función:
     // Para ello, necesito saber la energía de mi powerbar que poseo en este instante.
     int valorPowerBar = estado.getPowerBar(jugador).getPower();
 
@@ -928,8 +874,10 @@ double AIPlayer::miSub_Heuristica3_1(const Parchis &estado, int jugador)
     return puntuacion_jugador;
 }
 
-double AIPlayer::miSub_Heuristica3_2(const Parchis &estado, int jugador)
-{
+
+
+double AIPlayer::miSub_Heuristica3_2(const Parchis &estado, int jugador){
+    
     // IMPORTANTE: Aquí el jugador puede ser tanto el jugador actual como el oponente.
 
     // Colores que juega el jugador.
@@ -1042,120 +990,44 @@ double AIPlayer::miSub_Heuristica3_2(const Parchis &estado, int jugador)
     return puntuacion_jugador;
 }
 
-double AIPlayer::miSub_Heuristica3_3(const Parchis &estado, int jugador)
-{
-    // IMPORTANTE: Aquí el jugador puede ser tanto el jugador actual como el oponente.
 
-    // Colores que juega el jugador.
-    vector<color> my_colors = estado.getPlayerColors(jugador);
 
-    // Puntuaciones del jugador.
-    int puntuacion_jugador = 0;
+// Función auxiliar que devuelve la puntuación de un dado especial en función de su valor.
+int AIPlayer::puntuacionPorDadoEspecial(const int valorPowerBar){
     
-    // Recorro colores del jugador.
-    // Recorro todas las fichas del jugador
-    for (int i = 0; i < my_colors.size(); i++)
-    {
-        color c = my_colors[i];
-        // Recorro las fichas de ese color.
-        for (int j = 0; j < num_pieces; j++)
-        {
-            Box casilla_act_j = estado.getBoard().getPiece(c, j).get_box();
-                
-            // Valoro positivamente que la ficha esté en casilla segura.
-            if (estado.isSafePiece(c, j))
-            {
-                puntuacion_jugador += 10;
-            }
-
-            // // Valoro positivamente que con este movimiento pueda comer una ficha
-            // // Tengo en cuenta que sean los colores del otro jugador.
-            pair<color, int> fichaComida = estado.eatenPiece();
-            if (fichaComida.first != none){
-                if(fichaComida.first != my_colors[0] and fichaComida.first != my_colors[1])
-                    puntuacion_jugador += puntuacion_jugador*2;
-                else // Si son de mis colores, lo valoro negativamente
-                    puntuacion_jugador -= puntuacion_jugador/2;
-            }
-
-            // Valoro positivamente que la ficha esté en el pasillo de camino a la meta.
-            else if (casilla_act_j.type == final_queue)
-            {
-                puntuacion_jugador += 10;
-            }
-
-            // Valoro en función de la distancia a la meta.
-            if (estado.distanceToGoal(c, j) > 0){
-                int distanciaAMeta = estado.distanceToGoal(c, j);
-                puntuacion_jugador += 100 - distanciaAMeta;
-            }         
-
-            int energia = estado.getPowerBar(jugador).getPower();
-
-            if(estado.distanceToGoal(c, j) <= 25 and (energia>= 65 and energia < 70)){
-                puntuacion_jugador += 20;
-            }
-            if(estado.distanceToGoal(c, j) <= 40 and (energia>= 75 and energia < 80)){
-                puntuacion_jugador += 20;
-            }
-            if(energia == 99){  // Para asegurarnos que coge la estrella si o si y no hace CATAPUMCHIMPUM
-                puntuacion_jugador += 100; 
-            }
-        }
-
-        // Valoro negativamente que tenga fichas en la casa.
-        puntuacion_jugador -= (estado.piecesAtHome(c) * 10);
-
-        // // Para que no pierda turnos, voy a dar gran importancia a que si tengo el dado 5
-        // // y fichas en la casa, escoja el dado 5
-        // if(estado.piecesAtHome(c)){
-        //     for(int i = 0; i < estado.getAvailableNormalDices(jugador).size(); i++){
-        //         if(estado.getAvailableNormalDices(jugador)[i] == 5){
-        //             puntuacion_jugador += 100; 
-        //         }
-        //     }
-        // }
-
-        // Valoro positivamente que tenga fichas en la meta.
-        puntuacion_jugador += (estado.piecesAtGoal(c) * 20);
-    }
-    
-    // Además de valorar los dados que me pueden beneficiar, recorro TODOS los dados 
-    // especiales de mi jugador con la siguiente función:
-    // Para ello, necesito saber la energía de mi powerbar que poseo en este instante.
-    int valorPowerBar = estado.getPowerBar(jugador).getPower();
+    int puntuacion = 0;
 
     if(valorPowerBar >= 0 and valorPowerBar < 50){              // Movimiento rápido (seta)
-        puntuacion_jugador += 20;
+        puntuacion += 20;
     }
     else if( (valorPowerBar >= 50 and valorPowerBar < 60) or    // Concha roja
              (valorPowerBar >= 70 and valorPowerBar < 75) ){
-        puntuacion_jugador += 30;          
+        puntuacion += 50;          
     }
     else if(valorPowerBar >= 60 and valorPowerBar < 65){        // BOOM
-        puntuacion_jugador -= 30;
+        puntuacion -= 70;
     }
     else if(valorPowerBar >= 65 and valorPowerBar < 70){        // Movimiento ultra-rápido
-        puntuacion_jugador += 35;
+        puntuacion += 70;
     }
     else if(valorPowerBar >= 75 and valorPowerBar < 80){        // Movimiento bala (Cohete)
-        puntuacion_jugador += 45;
+        puntuacion += 100;
     }
     else if(valorPowerBar >= 80 and valorPowerBar < 85){        // CATAPUM
-        puntuacion_jugador -= 50;
+        puntuacion -= 100;
     }
     else if(valorPowerBar >= 85 and valorPowerBar < 90){        // Concha azul
-        puntuacion_jugador += 65;
+        puntuacion += 120;
     }
     else if(valorPowerBar >= 90 and valorPowerBar < 95){        // BOOMBOOM
-        puntuacion_jugador -= 70;
+        puntuacion -= 120;
     }
     else if(valorPowerBar >= 95 and valorPowerBar < 100){       // Movimiento Estrella
-        puntuacion_jugador += 100;
+        puntuacion += 200;
     }
     else if(valorPowerBar >= 100){                              // CATAPUMCHIMPUM
-        puntuacion_jugador -= 100;
+        puntuacion -= 300;
     }
 
-    return puntuacion_jugador;
+    return puntuacion;
 }
